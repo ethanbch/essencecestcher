@@ -10,9 +10,11 @@ export const maxDuration = 60;
 export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
   if (secret && request.headers.get("authorization") !== `Bearer ${secret}`) {
+    console.warn("[cron] appel refusé : en-tête Authorization absent ou incorrect.");
     return Response.json({ error: "Non autorisé" }, { status: 401 });
   }
   if (!secret && process.env.VERCEL_ENV === "production") {
+    console.error("[cron] CRON_SECRET absent de ce déploiement : ajoutez-le (Production) puis redéployez.");
     return Response.json({ error: "CRON_SECRET manquant" }, { status: 500 });
   }
 
