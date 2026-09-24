@@ -1,13 +1,25 @@
 /** Informations publiques du site (mentions légales, SEO). Surchargeables par variables d'environnement. */
 
-const vercelUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL;
+/** Première URL valide parmi les candidates (variables vides ou sans protocole tolérées). */
+function resolveSiteUrl(...candidates: (string | undefined)[]): string {
+  for (const raw of candidates) {
+    const value = raw?.trim();
+    if (!value) continue;
+    try {
+      return new URL(/^https?:\/\//.test(value) ? value : `https://${value}`).origin;
+    } catch {
+      // valeur invalide : on essaie la suivante
+    }
+  }
+  return "http://localhost:3000";
+}
 
 export const SITE = {
   name: "essence, c'est cher",
   title: "Essence c'est cher — le plein au meilleur prix près de chez vous",
   description:
     "Trouvez la station-service la moins chère autour de chez vous ou sur votre trajet. Prix officiels des carburants publiés par l'État, mis à jour chaque matin.",
-  url: process.env.NEXT_PUBLIC_SITE_URL ?? (vercelUrl ? `https://${vercelUrl}` : "http://localhost:3000"),
+  url: resolveSiteUrl(process.env.NEXT_PUBLIC_SITE_URL, process.env.VERCEL_PROJECT_PRODUCTION_URL, process.env.VERCEL_URL),
   repo: "https://github.com/ethanbch/essencecestcher",
   /**
    * Éditeur. Site édité à titre non professionnel : la LCEN (art. 6, III-2) permet de ne publier
