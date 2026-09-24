@@ -1,26 +1,287 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #f4f2ec;
+  --surface: #ffffff;
+  --ink: #0e1013;
+  --ink-2: #3a3e45;
+  --muted: #6d717a;
+  --line: #e7e3da;
+  --line-strong: #d6d1c5;
+  --accent: #c8f53a;
+  --accent-ink: #1b2400;
+  --good: #16a34a;
+  --warn: #d97706;
+  --bad: #dc2626;
+  color-scheme: light;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-paper: var(--paper);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+  --color-good: var(--good);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-display: var(--font-display);
+  --shadow-float: 0 1px 2px rgb(14 16 19 / 0.06), 0 12px 40px -8px rgb(14 16 19 / 0.18);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.thin-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+
+/* ---------- Carte ---------- */
+
+.maplibregl-ctrl-attrib {
+  font-size: 10px;
+}
+
+.price-pin {
+  --pin-bg: var(--surface);
+  --pin-fg: var(--ink);
+  position: relative; /* enfant du marqueur MapLibre, pas le marqueur lui-même */
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: var(--pin-bg);
+  color: var(--pin-fg);
+  font: 600 12.5px/1 var(--font-geist-mono), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  box-shadow: 0 1px 2px rgb(14 16 19 / 0.12), 0 4px 12px -2px rgb(14 16 19 / 0.2);
+  cursor: pointer;
+  white-space: nowrap;
+  transform-origin: 50% 100%;
+  transition: transform 160ms cubic-bezier(0.2, 0.8, 0.2, 1), background 160ms;
+}
+.price-pin::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -4px;
+  width: 8px;
+  height: 8px;
+  background: var(--pin-bg);
+  transform: translateX(-50%) rotate(45deg);
+  border-radius: 1px;
+}
+.price-pin .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: var(--tier, var(--muted));
+}
+.price-pin[data-best="true"] {
+  --pin-bg: var(--accent);
+  --pin-fg: var(--accent-ink);
+}
+.price-pin[data-best="true"] .dot {
+  background: var(--accent-ink);
+}
+.price-pin[data-active="true"] {
+  --pin-bg: var(--ink);
+  --pin-fg: #fff;
+  transform: scale(1.18);
+  z-index: 2;
+}
+.price-pin[data-active="true"] .dot {
+  background: var(--accent);
+}
+.price-pin:hover {
+  transform: scale(1.1);
+}
+
+.user-dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  background: #2563eb;
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 0 rgb(37 99 235 / 0.45), 0 2px 6px rgb(0 0 0 / 0.25);
+  animation: user-pulse 2.2s infinite;
+}
+@keyframes user-pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgb(37 99 235 / 0.45), 0 2px 6px rgb(0 0 0 / 0.25);
+  }
+  70% {
+    box-shadow: 0 0 0 16px rgb(37 99 235 / 0), 0 2px 6px rgb(0 0 0 / 0.25);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgb(37 99 235 / 0), 0 2px 6px rgb(0 0 0 / 0.25);
+  }
+}
+
+.dest-flag {
+  width: 26px;
+  height: 30px;
+  background: no-repeat left bottom / contain
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 30'%3E%3Cpath d='M3 29V2' stroke='%230e1013' stroke-width='2.5' stroke-linecap='round'/%3E%3Cpath d='M4 2h19l-4 5 4 5H4z' fill='%230e1013'/%3E%3Cpath d='M8 2h4v5H8zM16 2h4v5h-4zM12 7h4v5h-4zM4 7h4v5H4z' fill='%23c8f53a'/%3E%3C/svg%3E");
+  filter: drop-shadow(0 2px 3px rgb(0 0 0 / 0.25));
+}
+
+/* ---------- Animations ---------- */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.animate-rise {
+  animation: rise 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes nudge {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(200 245 58 / 0);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgb(200 245 58 / 0.9);
+  }
+}
+.animate-nudge {
+  animation: nudge 1.4s ease-in-out 2;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: -200% 0;
+  }
+  to {
+    background-position: 200% 0;
+  }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--line) 0%, #f3f0e9 50%, var(--line) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+input[type="range"].range {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(to right, var(--ink) var(--fill, 50%), var(--line-strong) var(--fill, 50%));
+  outline: none;
+}
+input[type="range"].range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 0.2);
+  cursor: grab;
+}
+input[type="range"].range::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  cursor: grab;
+}
+input[type="range"].range:focus-visible::-webkit-slider-thumb {
+  box-shadow: 0 0 0 4px rgb(200 245 58 / 0.8);
+}
+
+/* ---------- Pages de texte (légal) ---------- */
+
+.legal {
+  color: var(--ink-2);
+  font-size: 15.5px;
+  line-height: 1.7;
+}
+.legal h2 {
+  margin: 2.2em 0 0.6em;
+  color: var(--ink);
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.legal p,
+.legal ul {
+  margin: 0.7em 0;
+}
+.legal ul {
+  padding-left: 1.2em;
+  list-style: disc;
+}
+.legal li {
+  margin: 0.45em 0;
+}
+.legal li::marker {
+  color: var(--muted);
+}
+.legal a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 3px;
+}
+.legal a:hover {
+  text-decoration-color: var(--ink);
+}
+.legal strong {
+  color: var(--ink);
+}
+.legal .lead {
+  border-radius: 16px;
+  background: var(--surface);
+  padding: 14px 18px;
+  color: var(--ink);
+  font-weight: 500;
 }
