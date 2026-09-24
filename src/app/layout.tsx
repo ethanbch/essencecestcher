@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
-import "maplibre-gl/dist/maplibre-gl.css";
 import { SITE } from "@/lib/site";
 import "./globals.css";
 
@@ -17,7 +16,7 @@ const geistMono = Geist_Mono({
 const display = Bricolage_Grotesque({
   variable: "--font-display",
   subsets: ["latin"],
-  weight: ["500", "700", "800"],
+  weight: ["700", "800"],
 });
 
 export const metadata: Metadata = {
@@ -36,6 +35,10 @@ export const metadata: Metadata = {
   },
   twitter: { card: "summary_large_image", title: SITE.title, description: SITE.description },
   formatDetection: { telephone: false },
+  // Balise Search Console (facultative : la validation par fichier dans /public suffit).
+  ...(process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION } }
+    : {}),
 };
 
 export const viewport: Viewport = {

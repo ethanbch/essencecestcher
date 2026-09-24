@@ -23,13 +23,14 @@ export async function GET(request: NextRequest) {
   try {
     // Jusqu'à ~200 s pour les enseignes : un premier remplissage complet (~90 s) tient en un passage,
     // en gardant de la marge sous la limite de 300 s.
-    const { dataset, enrichment, withBrand } = await refreshDataset({ brandsBudgetMs: 200_000 });
+    const { dataset, enrichment, withBrand, historyDays } = await refreshDataset({ brandsBudgetMs: 200_000 });
     const result = {
       ok: true,
       stations: dataset.stations.length,
       withBrand,
       brandsFetched: enrichment.fetched,
       brandsRemaining: enrichment.remaining,
+      historyDays,
       fetchedAt: dataset.fetchedAt,
       durationMs: Date.now() - started,
     };

@@ -10,7 +10,7 @@ export function LegalPage({ title, children }: { title: string; children: ReactN
     <div className="h-full overflow-y-auto">
       <div className="mx-auto max-w-2xl px-5 pb-16 pt-6 md:px-8 md:pt-8">
         <header className="flex items-center justify-between">
-          <Link href="/" aria-label="Retour à l'accueil">
+          <Link href="/" title="Retour à l'accueil">
             <Logo />
           </Link>
           <Link href="/" className="flex h-9 items-center gap-1.5 rounded-xl px-3 text-sm font-medium hover:bg-surface">

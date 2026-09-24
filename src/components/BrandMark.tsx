@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { brandInfo } from "@/lib/brands";
 
 /** Logo de l'enseigne, ou pastille à ses couleurs, ou pictogramme pompe pour les indépendants. */
@@ -9,8 +10,8 @@ export function BrandMark({ brand, size = 36 }: { brand?: string | null; size?: 
   if (info?.logo) {
     return (
       <span className="grid shrink-0 place-items-center overflow-hidden border border-line bg-white" style={box} title={info.label}>
-        {/* eslint-disable-next-line @next/next/no-img-element -- petites icônes statiques */}
-        <img src={info.logo} alt={info.label} width={size - 10} height={size - 10} className="object-contain" loading="lazy" />
+        {/* Icônes déjà en 128 px : pas besoin de l'optimiseur (et pas de quota d'optimisation consommé). */}
+        <Image src={info.logo} alt={info.label} width={size - 10} height={size - 10} className="object-contain" unoptimized />
       </span>
     );
   }

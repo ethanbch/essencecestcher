@@ -8,6 +8,7 @@ import {
   type GeoJSONSource,
   type MapLayerMouseEvent,
 } from "maplibre-gl";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
 import { circleBounds, circlePolygon } from "@/lib/geo";
 import type { Place } from "@/lib/geocode";

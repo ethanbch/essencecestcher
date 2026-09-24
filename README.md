@@ -63,6 +63,21 @@ Le flux open data ne contient ni nom ni enseigne. On les lit sur la fiche publiq
 Les logos des principales enseignes sont dans `public/brands/` (récupérés via `npm run logos`, référentiel dans
 `src/lib/brands.ts`). Les enseignes sans logo net (Intermarché…) ont une pastille à leurs couleurs.
 
+## SEO
+
+- **Pages de contenu** (rendues côté serveur, ISR 1 h) :
+  - `/prix-carburant` — France : moyennes nationales, régions, grandes villes ;
+  - `/prix-carburant/[region]` — ex. `/prix-carburant/bretagne` ;
+  - `/prix-carburant/[region]/[ville-departement]` — ex. `/prix-carburant/auvergne-rhone-alpes/lyon-69`
+    (une page par commune d'au moins 2 stations, soit ~2 000 pages).
+- **Texte propre à chaque page** généré depuis les chiffres (écart à la moyenne nationale, station la moins chère,
+  évolution 7/30 jours, ville voisine moins chère) : pas de contenu dupliqué.
+- **Historique** : le cron ajoute chaque jour les moyennes (France, régions, villes) à `history.json` (35 jours).
+- **Données structurées** : BreadcrumbList, ItemList de GasStation, Dataset ; WebSite sur l'accueil.
+- **Maillage** : accueil → grandes villes et régions ; ville → région, France, 9 villes proches ; région → villes, autres régions.
+- `sitemap.xml` dynamique (lastmod = date du relevé), `robots.txt`, image Open Graph par ville.
+- Search Console : fichier de validation dans `public/`, ou balise via `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`.
+
 ## Conformité
 
 - **Aucun cookie**, aucune mesure d'audience ni publicité : pas de bandeau de consentement nécessaire.

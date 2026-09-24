@@ -43,6 +43,8 @@ export function parseFeed(xml: string): Station[] {
     attributeNamePrefix: "",
     parseAttributeValue: false,
     parseTagValue: false,
+    // Le flux contient des entités HTML numériques (« Salleb&#339;uf »).
+    htmlEntities: true,
     isArray: (name) => ["pdv", "jour", "horaire", "service", "prix", "rupture"].includes(name),
   });
   const doc = parser.parse(xml) as { pdv_liste?: { pdv?: RawPdv[] } };
@@ -144,7 +146,8 @@ const LOWER_WORDS = new Set(["de", "du", "des", "la", "le", "les", "et", "sur", 
 
 /** "84 ROUTE DE MAILLOT" → "84 Route de Maillot". Laisse intactes les chaînes déjà en casse mixte. */
 export function prettify(value: string): string {
-  if (!value || value !== value.toUpperCase()) return value.replace(/\s+/g, " ");
+  // Considéré « en capitales » s'il n'a aucune minuscule non accentuée (le flux écrit parfois « VéNISSIEUX »).
+  if (!value || /[a-z]/.test(value)) return value.replace(/\s+/g, " ");
   return value
     .toLowerCase()
     .replace(/\s+/g, " ")

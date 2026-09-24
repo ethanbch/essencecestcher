@@ -1,6 +1,8 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
+import { buildAreaIndex, type AreaIndex } from "./areas";
 import { applyBrands, enrichBrands, type BrandsMap } from "./enrich";
+import { appendToHistory, emptyHistory, type History } from "./history";
 import { fetchDataset } from "./ingest";
 import type { Dataset } from "./types";
 
@@ -12,6 +14,7 @@ import type { Dataset } from "./types";
 const FILES = {
   dataset: "latest.json",
   brands: "brands.json",
+  history: "history.json",
 } as const;
 /** Durée pendant laquelle une instance garde le jeu en mémoire avant de revérifier. */
 const MEMORY_TTL_MS = 10 * 60_000;
@@ -63,6 +66,20 @@ export async function saveDataset(dataset: Dataset): Promise<void> {
 export const readBrands = async () => (await readJson<BrandsMap>(FILES.brands)) ?? {};
 export const saveBrands = (map: BrandsMap) => writeJson(FILES.brands, map);
 
+let historyMemory: { history: History; loadedAt: number } | null = null;
+
+/** Historique des prix moyens (pages SEO). Vide tant que le job n'a pas tourné. */
+export async function getHistory(): Promise<History> {
+  if (historyMemory && Date.now() - historyMemory.loadedAt < MEMORY_TTL_MS) return historyMemory.history;
+  const history = (await readJson<History>(FILES.history).catch(() => null)) ?? emptyHistory();
+  historyMemory = { history, loadedAt: Date.now() };
+  return history;
+}
+
+export async function getAreaIndex(): Promise<AreaIndex> {
+  return buildAreaIndex(await getDataset());
+}
+
 /**
  * Job du matin : récupère le flux officiel, complète les enseignes dans la limite de
  * `brandsBudgetMs` (les fiches restantes sont traitées aux passages suivants), puis enregistre.
@@ -89,8 +106,13 @@ export async function refreshDataset({ brandsBudgetMs = 0 }: { brandsBudgetMs?: 
   }
   applyBrands(dataset, brands);
   await saveDataset(dataset);
+
+  const history = appendToHistory((await readJson<History>(FILES.history)) ?? emptyHistory(), buildAreaIndex(dataset));
+  await writeJson(FILES.history, history);
+  historyMemory = { history, loadedAt: Date.now() };
+
   const withBrand = dataset.stations.filter((s) => s.brand).length;
-  return { dataset, enrichment, withBrand };
+  return { dataset, enrichment, withBrand, historyDays: history.days.length };
 }
 
 /**
@@ -107,7 +129,11 @@ export async function getDataset(): Promise<Dataset> {
         return stored;
       }
       if (memory) return memory.dataset;
-      return (await refreshDataset()).dataset;
+      // Aucun jeu enregistré (premier déploiement) : on récupère le flux sans bloquer sur l'écriture.
+      const dataset = await fetchDataset();
+      await saveDataset(dataset).catch((err) => console.error("[store] enregistrement impossible", err));
+      memory = { dataset, loadedAt: Date.now() };
+      return dataset;
     } finally {
       inflight = null;
     }

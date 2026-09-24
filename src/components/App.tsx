@@ -10,11 +10,14 @@ import { DEFAULT_VEHICLE, rankStations, ROAD_FACTOR, type SortMode, type Vehicle
 import { rankTrip, type TripSort } from "@/lib/trip";
 import type { NearbyResponse } from "@/lib/types";
 import { useTrip } from "@/lib/useTrip";
+import Link from "next/link";
+import type { HomeMeta } from "@/app/page";
 import { AddressSearch } from "./AddressSearch";
 import { FuelChips, nearestRadiusStep, PriceSummary, RadiusControl, SortTabs, VehiclePanel } from "./Controls";
 import { CarIcon, CheckIcon, InfoIcon, Logo } from "./Icons";
 import { LegalFooter } from "./LegalPage";
-import { MapView, type MapPadding } from "./MapView";
+import dynamic from "next/dynamic";
+import type { MapPadding } from "./MapView";
 import { StationCard, StationCardSkeleton } from "./StationCard";
 import { StationDetail } from "./StationDetail";
 import {
@@ -28,7 +31,7 @@ import {
   type Mode,
 } from "./TripView";
 
-type Meta = { fetchedAt: string | null; stationCount: number };
+type Meta = HomeMeta;
 type Load =
   | { status: "idle" }
   | { status: "loading" }
@@ -37,6 +40,9 @@ type Load =
 type Sheet = "min" | "peek" | "full";
 
 const PANEL_W = 440;
+
+// MapLibre (~1 Mo de JS + WebGL) n'est chargé qu'au moment d'une recherche : l'accueil reste léger.
+const MapView = dynamic(() => import("./MapView").then((m) => m.MapView), { ssr: false });
 
 export default function App({ meta }: { meta: Meta }) {
   const [mode, setMode] = useState<Mode>("nearby");
@@ -333,7 +339,7 @@ export default function App({ meta }: { meta: Meta }) {
   const controls = place && !active && (
     <div className={`shrink-0 space-y-3 border-b border-line pb-3 ${isMobile ? "-mx-4 px-4" : "px-5 pt-5"}`}>
       <div className="hidden items-center justify-between md:flex">
-        <button type="button" onClick={() => setPlace(null)} aria-label="Retour à l'accueil">
+        <button type="button" onClick={() => setPlace(null)} title="Retour à l'accueil">
           <Logo />
         </button>
         {meta.fetchedAt && <DataStamp iso={meta.fetchedAt} compact />}
@@ -400,6 +406,7 @@ export default function App({ meta }: { meta: Meta }) {
 
   return (
     <main className="relative h-dvh w-full overflow-hidden">
+      {place && (
       <MapView
         place={place}
         radiusKm={radius}
@@ -422,6 +429,7 @@ export default function App({ meta }: { meta: Meta }) {
         padding={padding}
         onSelect={selectStation}
       />
+      )}
 
       {!place && (
         <Landing
@@ -840,6 +848,29 @@ function Landing({
             </li>
           ))}
         </ul>
+        {meta.cities.length > 0 && (
+          <nav aria-label="Prix par ville et par région" className="mt-10 border-t border-line pt-6 text-[13.5px]">
+            <p className="font-semibold">Prix des carburants par ville</p>
+            <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-ink-2">
+              {meta.cities.map((c) => (
+                <Link key={c.href} href={c.href} className="hover:text-ink hover:underline">
+                  {c.name}
+                </Link>
+              ))}
+              <Link href="/prix-carburant" className="font-medium text-ink underline underline-offset-2">
+                Toute la France →
+              </Link>
+            </p>
+            <p className="mt-4 font-semibold">Par région</p>
+            <p className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-ink-2">
+              {meta.regions.map((r) => (
+                <Link key={r.href} href={r.href} className="hover:text-ink hover:underline">
+                  {r.name}
+                </Link>
+              ))}
+            </p>
+          </nav>
+        )}
         <LegalFooter className="mt-8" />
       </div>
     </div>
