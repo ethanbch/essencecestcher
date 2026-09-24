@@ -6,7 +6,7 @@ import type { Dataset } from "./types";
 
 /**
  * Stockage :
- * - En production (Vercel) : Vercel Blob, si BLOB_READ_WRITE_TOKEN est défini.
+ * - En production (Vercel) : Vercel Blob, dès qu'un store est connecté au projet.
  * - En local : des fichiers JSON dans ./data.
  */
 const FILES = {
@@ -16,7 +16,8 @@ const FILES = {
 /** Durée pendant laquelle une instance garde le jeu en mémoire avant de revérifier. */
 const MEMORY_TTL_MS = 10 * 60_000;
 
-const blobEnabled = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN);
+// Store connecté par jeton (BLOB_READ_WRITE_TOKEN) ou par OIDC (BLOB_STORE_ID), selon la façon dont Vercel l'a relié.
+const blobEnabled = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID);
 const blobPath = (file: string) => `carburants/${file}`;
 const localPath = (file: string) => path.join(process.cwd(), "data", file);
 
