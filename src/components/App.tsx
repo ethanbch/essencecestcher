@@ -66,10 +66,19 @@ export default function App({ meta }: { meta: Meta }) {
   const [showUnranked, setShowUnranked] = useState(false);
   const [sheet, setSheet] = useState<Sheet>("peek");
   const [isMobile, setIsMobile] = useState(false);
+  // La carte de fond de l'accueil est chargée une fois la page affichée (navigateur inactif),
+  // pour ne pas retarder le premier affichage.
+  const [idle, setIdle] = useState(false);
   const [viewport, setViewport] = useState({ h: 800 });
   const listRef = useRef<HTMLDivElement>(null);
   // Passe à true dans le même rendu que l'état lu depuis l'URL : l'écriture ne l'écrase donc jamais.
   const [urlReady, setUrlReady] = useState(false);
+
+  useEffect(() => {
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, o?: { timeout: number }) => number };
+    if (w.requestIdleCallback) w.requestIdleCallback(() => setIdle(true), { timeout: 2000 });
+    else setTimeout(() => setIdle(true), 800);
+  }, []);
 
   // ---- Responsive ----
   useEffect(() => {
@@ -406,7 +415,7 @@ export default function App({ meta }: { meta: Meta }) {
 
   return (
     <main className="relative h-dvh w-full overflow-hidden">
-      {place && (
+      {(place || idle) && (
       <MapView
         place={place}
         radiusKm={radius}
