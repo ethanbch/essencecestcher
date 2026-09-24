@@ -77,7 +77,15 @@ export async function refreshDataset({ brandsBudgetMs = 0 }: { brandsBudgetMs?: 
       brands,
       { budgetMs: brandsBudgetMs },
     );
-    if (enrichment.fetched > 0) await saveBrands(brands);
+    if (enrichment.fetched > 0) {
+      // Un autre passage a pu écrire entre-temps (lancements manuels simultanés) : on fusionne
+      // en gardant, pour chaque station, la fiche la plus récente.
+      const latest = await readBrands();
+      for (const [id, info] of Object.entries(latest)) {
+        if (!brands[id] || brands[id].checkedAt < info.checkedAt) brands[id] = info;
+      }
+      await saveBrands(brands);
+    }
   }
   applyBrands(dataset, brands);
   await saveDataset(dataset);
