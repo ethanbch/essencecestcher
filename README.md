@@ -55,7 +55,8 @@ Sur l'offre Hobby, un cron quotidien est autorisé mais son heure exacte peut va
 Le flux open data ne contient ni nom ni enseigne. On les lit sur la fiche publique de chaque station
 (`prix-carburants.gouv.fr/map/recuperer_infos_pdv/{id}`) et on les garde dans `brands.json` (Blob ou `data/`) :
 
-- le job du matin y consacre ~40 s (≈ 2 000 fiches) : nouvelles stations d'abord, puis fiches de plus de 30 jours ;
+- le job du matin y consacre jusqu'à ~200 s (fonction limitée à 300 s en Fluid compute), assez pour tout remplir
+  en un passage ; ensuite il ne lit que les nouvelles stations et les fiches de plus de 30 jours ;
 - `npm run brands` fait le rattrapage complet (~1 min 30 pour ~9 800 stations) — à lancer une fois après le
   premier déploiement, avec `BLOB_READ_WRITE_TOKEN` dans `.env.local` pour écrire dans le Blob de production.
 

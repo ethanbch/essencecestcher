@@ -1,7 +1,8 @@
 import type { NextRequest } from "next/server";
 import { refreshDataset } from "@/lib/store";
 
-export const maxDuration = 60;
+// Fluid compute : jusqu'à 300 s, même sur l'offre Hobby.
+export const maxDuration = 300;
 
 /**
  * Job du matin : déclenché chaque jour par Vercel Cron (voir vercel.json).
@@ -20,8 +21,9 @@ export async function GET(request: NextRequest) {
 
   const started = Date.now();
   try {
-    // ~40 s pour les enseignes : environ 2 000 fiches par jour, le reste au passage suivant.
-    const { dataset, enrichment, withBrand } = await refreshDataset({ brandsBudgetMs: 40_000 });
+    // Jusqu'à ~200 s pour les enseignes : un premier remplissage complet (~90 s) tient en un passage,
+    // en gardant de la marge sous la limite de 300 s.
+    const { dataset, enrichment, withBrand } = await refreshDataset({ brandsBudgetMs: 200_000 });
     const result = {
       ok: true,
       stations: dataset.stations.length,
